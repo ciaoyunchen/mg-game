@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        #table {
+            width: 718px;
+            height: 510px;
+            background: #5A9367;
+            border: 35px solid #6f3826;
+            border-radius: 50px;
+            margin: 100px auto;
+            padding: 20px;
+            box-shadow: 1px 1px 5px #333;
+        }
+
+        #game {
+            width: 720px;
+        }
+
+        .card {
+            width: 100px;
+            height: 150px;
+            transform-style: preserve-3d;
+            position: relative;
+            transition: transform 0.5s;
+            float: left;
+            margin: 10px;
+        }
+
+        .open {
+            transform: rotateY(180deg);
+        }
+
+        .front {
+            width: 100%;
+            height: 100%;
+            background-image: url(./mg/mg.svg);
+            background-position: center;
+            background-size: contain;
+            background-repeat: no-repeat;
+            position: absolute;
+        }
+
+        .back {
+            width: 100%;
+            height: 100%;
+            background-position: center;
+            background-size: contain;
+            background-repeat: no-repeat;
+            position: absolute;
+            transform: rotateY(180deg);
+            filter: drop-shadow(1px 1px 1px #333);
+        }
+    </style>
+</head>
+<body>
+    <div id="table">
+        <div id="game"></div>
+    </div>
+
+    <script src="./jquery-3.4.1.min.js"></script>
+    <script>
+        $(function(){
+            for(let i=0; i<18; i++) {
+                $("#game").append(`
+                    <div class="card">
+                        <div class="front"></div>
+                        <div class="back"></div>
+                    </div>
+                `)
+            }
+
+            for(let i=0; i<$(".card").length; i++) {
+                // 每個數字要有兩張才能消除
+                // 以16張牌來說，要有8個數字
+                // 以 i/8 的餘數來判斷要加哪張牌
+                // 因為牌號從 1 開始，所以要加 1
+                let add = i % ( $(".card").length / 2 ) + 1;
+                $(".card").eq(i).find(".back").css("background-image", `url(./mg/mg0${add}.svg`);
+                $(".card").eq(i).attr("data-card", add);
+
+                // 隨機取一張牌，將他放在目前迴圈跑到的牌後
+                let target = Math.floor( Math.random()*$(".card").length );
+                $(".card").eq(target).insertAfter( $(".card").eq(i) );
+            }
+
+            $(".card").on("click",function() {
+                // 如果翻開的牌小於兩張，且這張還沒翻開  
+                if( $(".open").length < 2 && !$(this).hasClass("open") ) {
+                    $(this).addClass("open");
+                }
+
+                if( $(".open").length == 2 ) {
+                    // 一秒後翻回來
+                    setTimeout(function(){
+                        $(".open").removeClass("open");
+                    }, 1000)
+
+                    // 如果兩張一樣就消除
+                    if( $(".open").eq(0).attr("data-card") == $(".open").eq(1).attr("data-card") ) {
+                        $(".open").fadeTo(1000, 0).addClass("clear"); //fadeTo(1000, 0) 指定透明度一秒內變為零
+                    }
+                }
+
+                // 如果全部都clear
+                if( $(".clear").length == $(".card").length ) {
+                    setTimeout(function(){
+                        alert("過關囉!");
+                    }, 1000)
+                }
+            })
+        })
+    </script>
+</body>
+</html>
